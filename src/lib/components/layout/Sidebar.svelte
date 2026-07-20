@@ -81,11 +81,12 @@
 	import PinnedNoteList from './Sidebar/PinnedNoteList.svelte';
 	import Note from '../icons/Note.svelte';
 	import Code from '../icons/Code.svelte';
+	import Photo from '../icons/Photo.svelte';
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace', 'images'];
 
 	let scrollTop = 0;
 
@@ -146,6 +147,11 @@
 				);
 			case 'playground':
 				return $user?.role === 'admin';
+			case 'images':
+				return (
+					($config?.features?.enable_image_generation ?? false) &&
+					($user?.role === 'admin' || ($user?.permissions?.features?.image_generation ?? false))
+				);
 			default:
 				return false;
 		}
@@ -157,7 +163,8 @@
 			workspace: { label: 'Workspace', href: '/workspace', iconType: 'workspace' },
 			automations: { label: 'Automations', href: '/automations', iconType: 'automations' },
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
-			playground: { label: 'Playground', href: '/playground', iconType: 'playground' }
+			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
+			images: { label: 'Obrazy', href: '/images', iconType: 'images' }
 		};
 		return items[id];
 	};
@@ -967,6 +974,8 @@
 											</svg>
 										{:else if itemId === 'playground'}
 											<Code className="size-4.5" />
+										{:else if itemId === 'images'}
+											<Photo className="size-4.5" strokeWidth="1.5" />
 										{/if}
 									</div>
 								</a>
@@ -1216,6 +1225,8 @@
 												</svg>
 											{:else if itemId === 'playground'}
 												<Code className="size-4.5" strokeWidth="2" />
+											{:else if itemId === 'images'}
+												<Photo className="size-4.5" strokeWidth="2" />
 											{/if}
 										</div>
 
