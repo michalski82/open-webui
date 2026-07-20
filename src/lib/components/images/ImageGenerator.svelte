@@ -141,9 +141,9 @@
 							<button
 								type="button"
 								class="px-3 py-1.5 text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-300 transition rounded-lg"
-								on:click={() => openExternal('https://labs.google/fx/tools/image-fx')}
+								on:click={() => openExternal('https://gemini.google.com/app')}
 							>
-								Gemini ImageFX ↗
+								Google Gemini ↗
 							</button>
 							<button
 								type="button"
