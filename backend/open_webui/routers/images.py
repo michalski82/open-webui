@@ -611,6 +611,8 @@ async def image_generations(
     metadata = metadata or {}
 
     model = await get_image_model(request)
+    if form_data.model:
+        model = form_data.model
 
     try:
         if image_config.IMAGE_GENERATION_ENGINE == 'openai':
