@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
 
-	import { imageGenerations } from '$lib/apis/images';
+	import { imageGenerations, imageEdits } from '$lib/apis/images';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	const MODELS = [
-		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy' },
-		{ value: 'flux', label: 'Flux Schnell (szybki) — darmowy' },
-		{ value: 'flux-anime', label: 'Flux Anime — darmowy' },
-		{ value: 'flux-3d', label: 'Flux 3D — darmowy' },
-		{ value: 'turbo', label: 'SDXL Turbo — darmowy' },
-		{ value: 'hf-flux-schnell', label: 'HF Flux Schnell — darmowy' },
-		{ value: 'hf-sdxl', label: 'HF SDXL XL — darmowy' },
-		{ value: 'hf-dreamshaper', label: 'HF Dreamshaper XL — darmowy' },
-		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny' }
+		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy', editSupport: false },
+		{ value: 'flux', label: 'Flux Schnell (szybki) — darmowy', editSupport: false },
+		{ value: 'flux-anime', label: 'Flux Anime — darmowy', editSupport: false },
+		{ value: 'flux-3d', label: 'Flux 3D — darmowy', editSupport: false },
+		{ value: 'turbo', label: 'SDXL Turbo — darmowy', editSupport: false },
+		{ value: 'hf-flux-schnell', label: 'HF Flux Schnell — darmowy', editSupport: false },
+		{ value: 'hf-sdxl', label: 'HF SDXL XL — darmowy', editSupport: false },
+		{ value: 'hf-dreamshaper', label: 'HF Dreamshaper XL — darmowy', editSupport: false },
+		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny', editSupport: true }
 	];
 
 	let loading = false;
@@ -21,8 +21,16 @@
 	let negativePrompt = '';
 	let selectedModel = 'flux-realism';
 	let generatedImages: { url: string }[] = [];
+	let uploadedImage: string | null = null;
+	let isDraggingOver = false;
+	let fileInputElement: HTMLInputElement;
 
 	$: isHfModel = selectedModel.startsWith('hf-');
+	$: isEditMode = !!uploadedImage;
+	$: visibleModels = isEditMode ? MODELS.filter(m => m.editSupport) : MODELS;
+	$: if (isEditMode && !MODELS.find(m => m.value === selectedModel)?.editSupport) {
+		selectedModel = 'gemini-2.5-flash-image';
+	}
 
 	let promptTextareaElement: HTMLTextAreaElement;
 
@@ -36,17 +44,25 @@
 
 	const submitHandler = async () => {
 		if (!prompt.trim()) {
-			toast.error('Wpisz opis obrazu.');
+			toast.error(isEditMode ? 'Wpisz opis zmian.' : 'Wpisz opis obrazu.');
 			return;
 		}
 
 		loading = true;
 		try {
-			const result = await imageGenerations(localStorage.token, prompt, selectedModel, isHfModel ? negativePrompt : undefined);
+			let result;
+			if (isEditMode && uploadedImage) {
+				result = await imageEdits(localStorage.token, uploadedImage, prompt, selectedModel);
+			} else {
+				result = await imageGenerations(
+					localStorage.token, prompt, selectedModel,
+					isHfModel ? negativePrompt : undefined
+				);
+			}
 			if (result && result.length > 0) {
 				generatedImages = [...result, ...generatedImages];
 			} else if (result && result.length === 0) {
-				toast.error('Generowanie nie zwrocilo obrazu. Sprawdz ustawienia lub sprobuj inny model.');
+				toast.error('Operacja nie zwróciła obrazu. Sprawdź ustawienia lub spróbuj ponownie.');
 			}
 		} catch (error) {
 			toast.error(`${error}`);
@@ -78,6 +94,35 @@
 		} catch {
 			toast.error('Nie udalo sie pobrac obrazu.');
 		}
+	};
+
+	const handleFileSelect = (file: File) => {
+		if (!file.type.startsWith('image/')) {
+			toast.error('Wybierz plik graficzny.');
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			uploadedImage = e.target?.result as string;
+		};
+		reader.readAsDataURL(file);
+	};
+
+	const onFileInputChange = (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		if (target.files?.[0]) handleFileSelect(target.files[0]);
+	};
+
+	const onDrop = (e: DragEvent) => {
+		e.preventDefault();
+		isDraggingOver = false;
+		const file = e.dataTransfer?.files[0];
+		if (file) handleFileSelect(file);
+	};
+
+	const clearUploadedImage = () => {
+		uploadedImage = null;
+		if (fileInputElement) fileInputElement.value = '';
 	};
 </script>
 
@@ -120,6 +165,57 @@
 				</div>
 			</div>
 
+			<!-- Upload zone (zawsze widoczna) -->
+			<div class="pb-2">
+				{#if uploadedImage}
+					<!-- Podgląd wgranego obrazu + przycisk czyszczenia -->
+					<div class="relative inline-block">
+						<img
+							src={uploadedImage}
+							alt="Wgrany obraz"
+							class="max-h-40 rounded-lg border border-gray-200/50 dark:border-gray-700/50 object-contain"
+						/>
+						<button
+							type="button"
+							class="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+							on:click={clearUploadedImage}
+							title="Usuń obraz"
+						>
+							✕
+						</button>
+					</div>
+					<p class="text-xs text-blue-500 dark:text-blue-400 mt-1 px-1">
+						Tryb edycji — opisz co zmienić
+					</p>
+				{:else}
+					<!-- Strefa drag-and-drop -->
+					<div
+						role="button"
+						tabindex="0"
+						class="border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition
+							   {isDraggingOver
+								   ? 'border-blue-400 bg-blue-50/10'
+								   : 'border-gray-200/40 dark:border-gray-700/40 hover:border-gray-300/60 dark:hover:border-gray-600/60'}"
+						on:click={() => fileInputElement?.click()}
+						on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputElement?.click(); }}
+						on:dragover|preventDefault={() => { isDraggingOver = true; }}
+						on:dragleave={() => { isDraggingOver = false; }}
+						on:drop={onDrop}
+					>
+						<p class="text-xs text-gray-400 dark:text-gray-600">
+							Wgraj obraz do edycji — kliknij lub przeciągnij tutaj
+						</p>
+					</div>
+					<input
+						bind:this={fileInputElement}
+						type="file"
+						accept="image/*"
+						class="hidden"
+						on:change={onFileInputChange}
+					/>
+				{/if}
+			</div>
+
 			<!-- Input area -->
 			<div class="pb-3">
 				<p class="text-xs text-gray-400 dark:text-gray-600 mb-1.5 px-1">
@@ -133,7 +229,9 @@
 							bind:this={promptTextareaElement}
 							bind:value={prompt}
 							class="w-full h-full bg-transparent resize-none outline-hidden text-sm"
-							placeholder="Opisz obraz, ktory chcesz wygenerowac..."
+							placeholder={isEditMode
+								? 'Opisz co chcesz zmienić w obrazie...'
+								: 'Opisz obraz, który chcesz wygenerować...'}
 							on:input={resizeTextarea}
 							on:focus={resizeTextarea}
 							on:keydown={(e) => {
@@ -146,7 +244,7 @@
 						/>
 					</div>
 
-					{#if isHfModel}
+					{#if isHfModel && !isEditMode}
 					<!-- Negative prompt (only for HF models) -->
 					<div class="mt-2 border-t border-gray-100/20 pt-2">
 						<textarea
@@ -166,7 +264,7 @@
 								bind:value={selectedModel}
 								class="text-xs bg-gray-50 dark:bg-gray-850 border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg px-2 py-1.5 outline-none cursor-pointer"
 							>
-								{#each MODELS as m}
+								{#each visibleModels as m}
 									<option value={m.value}>{m.label}</option>
 								{/each}
 							</select>
@@ -209,7 +307,7 @@
 									class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
 									on:click={submitHandler}
 								>
-									Generuj
+									{isEditMode ? 'Edytuj' : 'Generuj'}
 								</button>
 							{:else}
 								<button
@@ -217,7 +315,7 @@
 									disabled
 								>
 									<Spinner className="size-4" />
-									Generowanie...
+									{isEditMode ? 'Edytowanie...' : 'Generowanie...'}
 								</button>
 							{/if}
 						</div>
