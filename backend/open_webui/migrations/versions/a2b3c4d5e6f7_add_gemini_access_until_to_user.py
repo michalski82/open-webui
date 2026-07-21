@@ -1,7 +1,7 @@
 """Add gemini_access_until to user table
 
 Revision ID: a2b3c4d5e6f7
-Revises: a1b2c3d4e5f6
+Revises: 42e2978c7933
 Create Date: 2026-07-21 00:00:00.000000
 """
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = 'a2b3c4d5e6f7'
-down_revision: Union[str, None] = 'a1b2c3d4e5f6'
+down_revision: Union[str, None] = '42e2978c7933'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
