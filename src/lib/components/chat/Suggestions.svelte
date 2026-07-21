@@ -71,13 +71,16 @@
 	{:else}
 		<!-- Keine Vorschläge -->
 
-		<div
+		<a
+			href="https://michalski.uk"
+			target="_blank"
+			rel="noopener noreferrer"
 			class="flex w-full {$settings?.landingPageMode === 'chat'
 				? ' -mt-1'
-				: 'text-center items-center justify-center'}  self-start text-gray-600 dark:text-gray-400"
+				: 'text-center items-center justify-center'} self-start text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
 		>
-			{$WEBUI_NAME} ‧ v{WEBUI_VERSION}
-		</div>
+			michalski.uk
+		</a>
 	{/if}
 </div>
 
