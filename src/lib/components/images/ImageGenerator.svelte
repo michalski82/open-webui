@@ -10,9 +10,6 @@
 		{ value: 'flux-anime', label: 'Flux Anime — darmowy', editSupport: false },
 		{ value: 'flux-3d', label: 'Flux 3D — darmowy', editSupport: false },
 		{ value: 'turbo', label: 'SDXL Turbo — darmowy', editSupport: false },
-		{ value: 'hf-flux-schnell', label: 'HF Flux Schnell — darmowy', editSupport: false },
-		{ value: 'hf-sdxl', label: 'HF SDXL XL — darmowy', editSupport: false },
-		{ value: 'hf-dreamshaper', label: 'HF Dreamshaper XL — darmowy', editSupport: false },
 		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny', editSupport: true }
 	];
 
