@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	import { imageGenerations, imageEdits } from '$lib/apis/images';
 	import { getGeminiAccess } from '$lib/apis/users';
+	import { notifyAdmin } from '$lib/apis/bot';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import { user } from '$lib/stores';
 
@@ -14,6 +15,15 @@
 	// Dostęp Gemini
 	let geminiAccess: { active: boolean; until: string | null } = { active: false, until: null };
 	let geminiAccessLoaded = false;
+
+	// Polling po notify-admin
+	let notifyAdminSent = false;
+	let notifyAdminTimedOut = false;
+	let pollingIntervalId: ReturnType<typeof setInterval> | null = null;
+	let pollingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+	const POLL_INTERVAL_MS = 15_000;  // 15 sekund
+	const POLL_MAX_MS = 5 * 60_000;   // 5 minut
 
 	const MODELS = [
 		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy', editSupport: false, requiresAccess: false },
@@ -52,6 +62,10 @@
 		} finally {
 			geminiAccessLoaded = true;
 		}
+	});
+
+	onDestroy(() => {
+		stopPolling();
 	});
 
 	const resizeTextarea = () => {
@@ -147,6 +161,55 @@
 	const clearUploadedImage = () => {
 		uploadedImage = null;
 		if (fileInputElement) fileInputElement.value = '';
+	};
+
+	const stopPolling = () => {
+		if (pollingIntervalId !== null) {
+			clearInterval(pollingIntervalId);
+			pollingIntervalId = null;
+		}
+		if (pollingTimeoutId !== null) {
+			clearTimeout(pollingTimeoutId);
+			pollingTimeoutId = null;
+		}
+	};
+
+	const startPolling = () => {
+		stopPolling();
+		pollingIntervalId = setInterval(async () => {
+			try {
+				geminiAccess = await getGeminiAccess(localStorage.token);
+				if (geminiAccess.active) {
+					stopPolling();
+				}
+			} catch (e) {
+				console.error('Polling gemini access failed:', e);
+			}
+		}, POLL_INTERVAL_MS);
+
+		pollingTimeoutId = setTimeout(() => {
+			stopPolling();
+			notifyAdminTimedOut = true;
+		}, POLL_MAX_MS);
+	};
+
+	const notifyAdminHandler = async () => {
+		try {
+			await notifyAdmin(localStorage.token);
+			notifyAdminSent = true;
+			notifyAdminTimedOut = false;
+			startPolling();
+		} catch (e) {
+			toast.error('Nie udalo sie wyslac powiadomienia. Sprobuj ponownie.');
+		}
+	};
+
+	const refreshGeminiAccess = async () => {
+		try {
+			geminiAccess = await getGeminiAccess(localStorage.token);
+		} catch (e) {
+			toast.error('Nie udalo sie odswiezac statusu.');
+		}
 	};
 </script>
 
@@ -254,7 +317,46 @@
 						<p class="text-amber-700 dark:text-amber-400">
 							Po przelewie napisz na
 							<a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer" class="underline">Telegram</a>
+							lub kliknij nizej:
 						</p>
+						<div class="flex gap-2 pt-1 flex-wrap">
+							{#if !notifyAdminSent}
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition"
+									on:click={notifyAdminHandler}
+								>
+									Powiadom administratora
+								</button>
+							{:else if geminiAccess.active}
+								<!-- baner przejdzie do gałęzi active, ten blok nie wystąpi, ale dla bezpieczeństwa: -->
+								<span class="text-green-600 dark:text-green-400 font-medium">Aktywowano!</span>
+							{:else if notifyAdminTimedOut}
+								<span class="text-amber-700 dark:text-amber-400 italic">Nie aktywowano w ciagu 5 minut — sprobuj ponownie.</span>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition"
+									on:click={notifyAdminHandler}
+								>
+									Wyslij ponownie
+								</button>
+							{:else}
+								<button
+									type="button"
+									disabled
+									class="px-3 py-1.5 text-xs font-medium bg-amber-400 text-white rounded-lg cursor-not-allowed opacity-70"
+								>
+									Wyslano — czekam...
+								</button>
+							{/if}
+							<button
+								type="button"
+								class="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition"
+								on:click={refreshGeminiAccess}
+							>
+								Odswiez
+							</button>
+						</div>
 					</div>
 				{/if}
 			{/if}
