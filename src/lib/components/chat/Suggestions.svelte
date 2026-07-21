@@ -72,14 +72,14 @@
 		<!-- Keine Vorschläge -->
 
 		<a
-			href="https://michalski.uk"
+			href="https://michal.michalski.uk"
 			target="_blank"
 			rel="noopener noreferrer"
 			class="flex w-full {$settings?.landingPageMode === 'chat'
 				? ' -mt-1'
 				: 'text-center items-center justify-center'} self-start text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
 		>
-			michalski.uk
+			michal.michalski.uk
 		</a>
 	{/if}
 </div>
