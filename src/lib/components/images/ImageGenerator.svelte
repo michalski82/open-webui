@@ -43,8 +43,10 @@
 		loading = true;
 		try {
 			const result = await imageGenerations(localStorage.token, prompt, selectedModel, isHfModel ? negativePrompt : undefined);
-			if (result) {
+			if (result && result.length > 0) {
 				generatedImages = [...result, ...generatedImages];
+			} else if (result && result.length === 0) {
+				toast.error('Generowanie nie zwrocilo obrazu. Sprawdz ustawienia lub sprobuj inny model.');
 			}
 		} catch (error) {
 			toast.error(`${error}`);
