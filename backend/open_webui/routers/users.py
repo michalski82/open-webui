@@ -40,6 +40,7 @@ from open_webui.utils.auth import (
     get_verified_user,
     validate_password,
 )
+from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -843,3 +844,19 @@ async def get_user_preview(
             'total': len(all_tools),
         },
     }
+
+
+class GeminiAccessStatusResponse(BaseModel):
+    active: bool
+    until: str | None  # ISO 8601 or null
+
+
+@router.get('/me/gemini-access', response_model=GeminiAccessStatusResponse)
+async def get_my_gemini_access(
+    user=Depends(get_verified_user),
+):
+    until_epoch = user.gemini_access_until
+    if until_epoch and until_epoch > int(time.time()):
+        until_dt = datetime.fromtimestamp(until_epoch, tz=timezone.utc)
+        return GeminiAccessStatusResponse(active=True, until=until_dt.isoformat())
+    return GeminiAccessStatusResponse(active=False, until=None)

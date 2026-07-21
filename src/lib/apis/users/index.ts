@@ -604,3 +604,15 @@ export const getUserPreview = async (token: string, userId: string) => {
 
 	return res;
 };
+
+export const getGeminiAccess = async (token: string): Promise<{ active: boolean; until: string | null }> => {
+	const res = await fetch(`${WEBUI_API_BASE_URL}/users/me/gemini-access`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		}
+	});
+	if (!res.ok) throw await res.json();
+	return res.json();
+};

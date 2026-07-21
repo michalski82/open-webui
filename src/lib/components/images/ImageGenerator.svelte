@@ -1,16 +1,27 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
 
 	import { imageGenerations, imageEdits } from '$lib/apis/images';
+	import { getGeminiAccess } from '$lib/apis/users';
 	import Spinner from '$lib/components/common/Spinner.svelte';
+	import { user } from '$lib/stores';
+
+	// Stałe do banera płatności
+	const BLIK_PHONE = '501 145 899';
+	const TELEGRAM_BOT_URL = 'https://t.me/majkel_servbot';
+
+	// Dostęp Gemini
+	let geminiAccess: { active: boolean; until: string | null } = { active: false, until: null };
+	let geminiAccessLoaded = false;
 
 	const MODELS = [
-		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy', editSupport: false },
-		{ value: 'flux', label: 'Flux Schnell (szybki) — darmowy', editSupport: false },
-		{ value: 'flux-anime', label: 'Flux Anime — darmowy', editSupport: false },
-		{ value: 'flux-3d', label: 'Flux 3D — darmowy', editSupport: false },
-		{ value: 'turbo', label: 'SDXL Turbo — darmowy', editSupport: false },
-		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny', editSupport: true }
+		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy', editSupport: false, requiresAccess: false },
+		{ value: 'flux', label: 'Flux Schnell (szybki) — darmowy', editSupport: false, requiresAccess: false },
+		{ value: 'flux-anime', label: 'Flux Anime — darmowy', editSupport: false, requiresAccess: false },
+		{ value: 'flux-3d', label: 'Flux 3D — darmowy', editSupport: false, requiresAccess: false },
+		{ value: 'turbo', label: 'SDXL Turbo — darmowy', editSupport: false, requiresAccess: false },
+		{ value: 'gemini-3.1-flash-lite-image', label: 'Gemini Flash Lite — platny (~0.14 zł/obraz)', editSupport: true, requiresAccess: true }
 	];
 
 	let loading = false;
@@ -26,10 +37,22 @@
 	$: isEditMode = !!uploadedImage;
 	$: visibleModels = isEditMode ? MODELS.filter(m => m.editSupport) : MODELS;
 	$: if (isEditMode && !MODELS.find(m => m.value === selectedModel)?.editSupport) {
-		selectedModel = 'gemini-2.5-flash-image';
+		selectedModel = 'gemini-3.1-flash-lite-image';
 	}
+	$: geminiModel = MODELS.find(m => m.value === selectedModel);
+	$: isGeminiBlocked = geminiAccessLoaded && !geminiAccess.active && geminiModel?.requiresAccess;
 
 	let promptTextareaElement: HTMLTextAreaElement;
+
+	onMount(async () => {
+		try {
+			geminiAccess = await getGeminiAccess(localStorage.token);
+		} catch (e) {
+			console.error('Failed to fetch Gemini access:', e);
+		} finally {
+			geminiAccessLoaded = true;
+		}
+	});
 
 	const resizeTextarea = () => {
 		if (promptTextareaElement) {
@@ -42,6 +65,10 @@
 	const submitHandler = async () => {
 		if (!prompt.trim()) {
 			toast.error(isEditMode ? 'Wpisz opis zmian.' : 'Wpisz opis obrazu.');
+			return;
+		}
+		if (isGeminiBlocked) {
+			toast.error('Aktywuj dostep do Gemini — wyslij 9 zl BLIKiem.');
 			return;
 		}
 
@@ -213,6 +240,25 @@
 				{/if}
 			</div>
 
+			<!-- Baner Gemini — dostęp / aktywacja -->
+			{#if geminiAccessLoaded}
+				{#if geminiAccess.active && geminiAccess.until}
+					<div class="mb-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs">
+						Dostep Gemini aktywny do: {new Date(geminiAccess.until).toLocaleString('pl-PL')}
+					</div>
+				{:else}
+					<div class="mb-2 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50 text-xs space-y-1">
+						<p class="font-semibold text-amber-800 dark:text-amber-300">Gemini wymaga aktywacji</p>
+						<p class="text-amber-700 dark:text-amber-400">Wyslij <strong>9 zl BLIKiem</strong> na numer: <strong>{BLIK_PHONE}</strong></p>
+						<p class="text-amber-700 dark:text-amber-400">Tytul przelewu: <code class="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{$user?.email ?? 'twoj@email.pl'}</code></p>
+						<p class="text-amber-700 dark:text-amber-400">
+							Po przelewie napisz na
+							<a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer" class="underline">Telegram</a>
+						</p>
+					</div>
+				{/if}
+			{/if}
+
 			<!-- Input area -->
 			<div class="pb-3">
 				<p class="text-xs text-gray-400 dark:text-gray-600 mb-1.5 px-1">
@@ -262,7 +308,10 @@
 								class="text-xs bg-gray-50 dark:bg-gray-850 border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg px-2 py-1.5 outline-none cursor-pointer"
 							>
 								{#each visibleModels as m}
-									<option value={m.value}>{m.label}</option>
+									<option
+										value={m.value}
+										disabled={m.requiresAccess && geminiAccessLoaded && !geminiAccess.active}
+									>{m.label}{m.requiresAccess && geminiAccessLoaded && !geminiAccess.active ? ' 🔒' : ''}</option>
 								{/each}
 							</select>
 

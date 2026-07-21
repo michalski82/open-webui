@@ -67,6 +67,9 @@ class User(Base):  # identity & profile
     status_message = Column(Text, nullable=True)
     status_expires_at = Column(BigInteger, nullable=True)
 
+    # Gemini access (epoch seconds, nullable)
+    gemini_access_until = Column(BigInteger, nullable=True)
+
     # Metadata
     info = Column(JSON, nullable=True)
     settings = Column(JSON, nullable=True)
@@ -103,6 +106,8 @@ class UserModel(BaseModel):
     status_emoji: str | None = None
     status_message: str | None = None
     status_expires_at: int | None = None
+
+    gemini_access_until: int | None = None
 
     info: dict | None = None
     settings: UserSettings | None = None
@@ -768,6 +773,22 @@ class UsersTable:
                 three_minutes_ago = int(time.time()) - 180
                 return user.last_active_at >= three_minutes_ago
             return False
+
+    async def update_gemini_access_by_email(
+        self,
+        email: str,
+        until_epoch: int,
+        db: AsyncSession | None = None,
+    ) -> UserModel | None:
+        async with get_async_db_context(db) as session:
+            email_filter = func.lower(User.email) == email.lower()
+            user = (await session.execute(select(User).where(email_filter))).scalars().first()
+            if not user:
+                return None
+            user.gemini_access_until = until_epoch
+            await session.commit()
+            await session.refresh(user)
+            return UserModel.model_validate(user)
 
 
 Users = UsersTable()  # singleton user repository
