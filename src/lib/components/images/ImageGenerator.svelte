@@ -417,34 +417,6 @@
 								{/each}
 							</select>
 
-							<button
-								type="button"
-								class="px-3 py-1.5 text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-300 transition rounded-lg"
-								on:click={() => openExternal('https://gemini.google.com/app')}
-							>
-								Gemini ↗
-							</button>
-							<button
-								type="button"
-								class="px-3 py-1.5 text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-300 transition rounded-lg"
-								on:click={() => openExternal('https://www.bing.com/images/create')}
-							>
-								Bing ↗
-							</button>
-							<button
-								type="button"
-								class="px-3 py-1.5 text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-300 transition rounded-lg"
-								on:click={() => openExternal('https://ideogram.ai/t/generate')}
-							>
-								Ideogram ↗
-							</button>
-							<button
-								type="button"
-								class="px-3 py-1.5 text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-850 dark:hover:bg-gray-800 dark:text-gray-300 transition rounded-lg"
-								on:click={() => openExternal('https://firefly.adobe.com/generate/images')}
-							>
-								Firefly ↗
-							</button>
 						</div>
 
 						<!-- Right: generate button -->
