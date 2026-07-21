@@ -196,7 +196,7 @@ export const getImageGenerationModels = async (token: string = '') => {
 	return res;
 };
 
-export const imageGenerations = async (token: string = '', prompt: string, model?: string) => {
+export const imageGenerations = async (token: string = '', prompt: string, model?: string, negativePrompt?: string) => {
 	let error = null;
 
 	const res = await fetch(`${IMAGES_API_BASE_URL}/generations`, {
@@ -208,7 +208,8 @@ export const imageGenerations = async (token: string = '', prompt: string, model
 		},
 		body: JSON.stringify({
 			prompt: prompt,
-			...(model && { model })
+			...(model && { model }),
+			...(negativePrompt && { negative_prompt: negativePrompt })
 		})
 	})
 		.then(async (res) => {

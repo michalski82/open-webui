@@ -646,6 +646,11 @@ async def image_generations(
                     else {'response_format': 'b64_json'}
                 ),
                 **({} if not image_config.IMAGES_OPENAI_API_PARAMS else image_config.IMAGES_OPENAI_API_PARAMS),
+                **(
+                    {'negative_prompt': form_data.negative_prompt}
+                    if form_data.negative_prompt
+                    else {}
+                ),
             }
 
             session = await get_session()

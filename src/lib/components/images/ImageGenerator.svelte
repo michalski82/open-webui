@@ -10,13 +10,19 @@
 		{ value: 'flux-anime', label: 'Flux Anime — darmowy' },
 		{ value: 'flux-3d', label: 'Flux 3D — darmowy' },
 		{ value: 'turbo', label: 'SDXL Turbo — darmowy' },
+		{ value: 'hf-flux-schnell', label: 'HF Flux Schnell — darmowy' },
+		{ value: 'hf-sdxl', label: 'HF SDXL XL — darmowy' },
+		{ value: 'hf-dreamshaper', label: 'HF Dreamshaper XL — darmowy' },
 		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny' }
 	];
 
 	let loading = false;
 	let prompt = '';
+	let negativePrompt = '';
 	let selectedModel = 'flux-realism';
 	let generatedImages: { url: string }[] = [];
+
+	$: isHfModel = selectedModel.startsWith('hf-');
 
 	let promptTextareaElement: HTMLTextAreaElement;
 
@@ -36,7 +42,7 @@
 
 		loading = true;
 		try {
-			const result = await imageGenerations(localStorage.token, prompt, selectedModel);
+			const result = await imageGenerations(localStorage.token, prompt, selectedModel, isHfModel ? negativePrompt : undefined);
 			if (result) {
 				generatedImages = [...result, ...generatedImages];
 			}
@@ -137,6 +143,18 @@
 							rows="3"
 						/>
 					</div>
+
+					{#if isHfModel}
+					<!-- Negative prompt (only for HF models) -->
+					<div class="mt-2 border-t border-gray-100/20 pt-2">
+						<textarea
+							bind:value={negativePrompt}
+							class="w-full bg-transparent resize-none outline-hidden text-xs text-gray-400 dark:text-gray-500"
+							placeholder="Negative prompt (opcjonalnie): czego nie chcesz na obrazie..."
+							rows="2"
+						/>
+					</div>
+					{/if}
 
 					<!-- Model selector + actions row -->
 					<div class="flex justify-between items-center gap-2 mt-2 flex-wrap">
