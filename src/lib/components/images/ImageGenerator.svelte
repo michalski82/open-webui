@@ -5,6 +5,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	const MODELS = [
+		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash (najlepsza jakość)' },
 		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm)' },
 		{ value: 'flux', label: 'Flux Schnell (szybki)' },
 		{ value: 'flux-anime', label: 'Flux Anime' },
@@ -14,7 +15,7 @@
 
 	let loading = false;
 	let prompt = '';
-	let selectedModel = 'flux-realism';
+	let selectedModel = 'gemini-2.5-flash-image';
 	let generatedImages: { url: string }[] = [];
 
 	let promptTextareaElement: HTMLTextAreaElement;
