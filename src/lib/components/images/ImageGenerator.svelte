@@ -21,7 +21,7 @@
 		{ value: 'flux-anime', label: 'Flux Anime — darmowy', editSupport: false, requiresAccess: false },
 		{ value: 'flux-3d', label: 'Flux 3D — darmowy', editSupport: false, requiresAccess: false },
 		{ value: 'turbo', label: 'SDXL Turbo — darmowy', editSupport: false, requiresAccess: false },
-		{ value: 'gemini-3.1-flash-lite-image', label: 'Gemini Flash Lite — platny (~0.14 zł/obraz)', editSupport: true, requiresAccess: true }
+		{ value: 'gemini-3.1-flash-lite-image', label: 'Gemini Flash Lite — platny', editSupport: true, requiresAccess: true }
 	];
 
 	let loading = false;
