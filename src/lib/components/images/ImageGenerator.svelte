@@ -5,17 +5,17 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 
 	const MODELS = [
-		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash (najlepsza jakość)' },
-		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm)' },
-		{ value: 'flux', label: 'Flux Schnell (szybki)' },
-		{ value: 'flux-anime', label: 'Flux Anime' },
-		{ value: 'flux-3d', label: 'Flux 3D' },
-		{ value: 'turbo', label: 'SDXL Turbo' }
+		{ value: 'flux-realism', label: 'Flux Realism (fotorealizm) — darmowy' },
+		{ value: 'flux', label: 'Flux Schnell (szybki) — darmowy' },
+		{ value: 'flux-anime', label: 'Flux Anime — darmowy' },
+		{ value: 'flux-3d', label: 'Flux 3D — darmowy' },
+		{ value: 'turbo', label: 'SDXL Turbo — darmowy' },
+		{ value: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash — platny' }
 	];
 
 	let loading = false;
 	let prompt = '';
-	let selectedModel = 'gemini-2.5-flash-image';
+	let selectedModel = 'flux-realism';
 	let generatedImages: { url: string }[] = [];
 
 	let promptTextareaElement: HTMLTextAreaElement;
