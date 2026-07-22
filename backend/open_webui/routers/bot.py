@@ -43,6 +43,13 @@ class NotifyAdminResponse(BaseModel):
     ok: bool
 
 
+class GeminiUserEntry(BaseModel):
+    email: str
+    name: str
+    active: bool
+    until: str | None
+
+
 @router.post('/gemini-access', response_model=GeminiAccessResponse)
 async def activate_gemini_access(
     form: GeminiAccessRequest,
@@ -82,6 +89,7 @@ async def notify_admin(
             "inline_keyboard": [[
                 {"text": "Aktywuj 24h", "callback_data": f"g24:{safe_email}"},
                 {"text": "Aktywuj 48h", "callback_data": f"g48:{safe_email}"},
+                {"text": "Dezaktywuj", "callback_data": f"g0:{safe_email}"},
             ]]
         },
     }
@@ -92,3 +100,26 @@ async def notify_admin(
             log.error("Telegram API error: %s %s", resp.status_code, resp.text)
             raise HTTPException(status_code=502, detail='Failed to send Telegram notification')
     return NotifyAdminResponse(ok=True)
+
+
+@router.get('/gemini-users', response_model=list[GeminiUserEntry])
+async def list_gemini_users(
+    _: None = Depends(_verify_bot_secret),
+):
+    users = await Users.get_all_users_gemini_panel()
+    now = int(time.time())
+    result = []
+    for u in users:
+        active = bool(u.gemini_access_until and u.gemini_access_until > now)
+        if u.gemini_access_until and u.gemini_access_until > now:
+            until_dt = datetime.fromtimestamp(u.gemini_access_until, tz=timezone.utc)
+            until_str = until_dt.isoformat()
+        else:
+            until_str = None
+        result.append(GeminiUserEntry(
+            email=u.email,
+            name=u.name,
+            active=active,
+            until=until_str,
+        ))
+    return result

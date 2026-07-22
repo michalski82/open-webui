@@ -774,6 +774,16 @@ class UsersTable:
                 return user.last_active_at >= three_minutes_ago
             return False
 
+    async def get_all_users_gemini_panel(
+        self,
+        db: AsyncSession | None = None,
+    ) -> list[UserModel]:
+        async with get_async_db_context(db) as session:
+            result = await session.execute(
+                select(User).order_by(User.name.asc())
+            )
+            return [UserModel.model_validate(u) for u in result.scalars().all()]
+
     async def update_gemini_access_by_email(
         self,
         email: str,
