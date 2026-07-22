@@ -1661,8 +1661,8 @@
 						</UserMenu>
 					{/if}
 					{#if $appVersion && $appVersion !== 'dev' && $appVersion !== ''}
-						<div class="flex justify-center">
-							<span class="text-xs text-gray-500 dark:text-gray-600">v{$appVersion}</span>
+						<div class="flex justify-center pb-1">
+							<span class="text-xs text-gray-400 dark:text-gray-400">v{$appVersion}</span>
 						</div>
 					{/if}
 				</div>
