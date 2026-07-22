@@ -17,6 +17,7 @@
 		WEBUI_NAME,
 		WEBUI_VERSION,
 		WEBUI_DEPLOYMENT_ID,
+		appVersion,
 		mobile,
 		socket,
 		socketConnected,
@@ -121,7 +122,6 @@
 	let disconnectWarningShown = false;
 	let appVersionPollInterval = null;
 	let reloadCountdownInterval = null;
-	let initialAppVersion = null;
 	let showReloadBanner = false;
 	let reloadCountdown = 60;
 
@@ -136,9 +136,9 @@
 			const data = await response.json();
 			const currentVersion = data.version;
 
-			if (initialAppVersion === null) {
-				initialAppVersion = currentVersion;
-			} else if (currentVersion !== initialAppVersion && initialAppVersion !== 'dev') {
+			if ($appVersion === '') {
+				appVersion.set(currentVersion);
+			} else if (currentVersion !== $appVersion && $appVersion !== 'dev') {
 				showReloadBanner = true;
 				reloadCountdown = RELOAD_COUNTDOWN_SECONDS;
 

@@ -29,7 +29,8 @@
 		selectedFolder,
 		WEBUI_NAME,
 		sidebarWidth,
-		activeChatIds
+		activeChatIds,
+		appVersion
 	} from '$lib/stores';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
@@ -1658,6 +1659,11 @@
 								<div class=" self-center font-medium truncate">{$user?.name}</div>
 							</button>
 						</UserMenu>
+					{/if}
+					{#if $appVersion && $appVersion !== 'dev' && $appVersion !== ''}
+						<div class="flex justify-center">
+							<span class="text-xs text-gray-500 dark:text-gray-600">v{$appVersion}</span>
+						</div>
 					{/if}
 				</div>
 			</div>
