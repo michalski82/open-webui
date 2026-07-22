@@ -119,9 +119,46 @@
 	let heartbeatInterval = null;
 	let disconnectToastTimer = null;
 	let disconnectWarningShown = false;
+	let appVersionPollInterval = null;
+	let reloadCountdownInterval = null;
+	let initialAppVersion = null;
+	let showReloadBanner = false;
+	let reloadCountdown = 60;
 
 	const BREAKPOINT = 768;
 	const DISCONNECT_TOAST_DELAY_MS = 2000;
+	const APP_VERSION_POLL_INTERVAL_MS = 300000; // 5 minutes
+	const RELOAD_COUNTDOWN_SECONDS = 60;
+
+	const startAppVersionPolling = async () => {
+		try {
+			const response = await fetch(`${WEBUI_API_BASE_URL}/app-version`);
+			const data = await response.json();
+			const currentVersion = data.version;
+
+			if (initialAppVersion === null) {
+				initialAppVersion = currentVersion;
+			} else if (currentVersion !== initialAppVersion && initialAppVersion !== 'dev') {
+				showReloadBanner = true;
+				reloadCountdown = RELOAD_COUNTDOWN_SECONDS;
+
+				// Start countdown timer
+				if (reloadCountdownInterval) {
+					clearInterval(reloadCountdownInterval);
+				}
+				reloadCountdownInterval = setInterval(() => {
+					reloadCountdown--;
+					if (reloadCountdown <= 0) {
+						clearInterval(reloadCountdownInterval);
+						reloadCountdownInterval = null;
+						window.location.reload();
+					}
+				}, 1000);
+			}
+		} catch (error) {
+			console.error('Failed to fetch app version:', error);
+		}
+	};
 
 	const setupSocket = async (enableWebsocket) => {
 		const _socket = io(`${WEBUI_BASE_URL}` || undefined, {
@@ -1220,6 +1257,12 @@
 			showSyncStatsModal = true;
 		}
 
+		// Start app version polling when user is authenticated
+		if (localStorage.token) {
+			await startAppVersionPolling();
+			appVersionPollInterval = setInterval(startAppVersionPolling, APP_VERSION_POLL_INTERVAL_MS);
+		}
+
 		return () => {
 			window.removeEventListener('resize', onResize);
 			window.removeEventListener('message', windowMessageEventHandler);
@@ -1227,6 +1270,14 @@
 			document.removeEventListener('touchmove', touchmoveHandler);
 			document.removeEventListener('touchend', touchendHandler);
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			if (appVersionPollInterval) {
+				clearInterval(appVersionPollInterval);
+				appVersionPollInterval = null;
+			}
+			if (reloadCountdownInterval) {
+				clearInterval(reloadCountdownInterval);
+				reloadCountdownInterval = null;
+			}
 		};
 	});
 
@@ -1253,6 +1304,16 @@
 {#if showRefresh}
 	<div class=" py-5">
 		<Spinner className="size-5" />
+	</div>
+{/if}
+
+{#if showReloadBanner}
+	<div
+		class="fixed bottom-0 left-0 right-0 bg-green-600 dark:bg-green-700 text-white px-4 py-3 shadow-lg flex items-center justify-between z-50"
+	>
+		<span class="text-sm font-medium">
+			🔄 Nowa wersja MM-AI jest dostępna — odświeżam za {reloadCountdown}s
+		</span>
 	</div>
 {/if}
 

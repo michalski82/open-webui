@@ -21,6 +21,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Read app version
+        run: echo "APP_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -42,5 +45,6 @@ jobs:
             ghcr.io/michalski82/open-webui:latest
           build-args: |
             BUILD_HASH=${{ github.sha }}
+            APP_VERSION=${{ env.APP_VERSION }}
           cache-from: type=registry,ref=ghcr.io/michalski82/open-webui:cache
           cache-to: type=registry,ref=ghcr.io/michalski82/open-webui:cache,mode=max

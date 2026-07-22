@@ -2187,6 +2187,11 @@ async def get_app_latest_release_version(user=Depends(get_verified_user)):
         return {'current': VERSION, 'latest': VERSION}
 
 
+@app.get('/api/app-version')
+async def get_mm_ai_version():
+    return {'version': os.getenv('APP_VERSION', 'dev')}
+
+
 @app.get('/api/changelog')
 async def get_app_changelog():
     return {key: CHANGELOG[key] for idx, key in enumerate(CHANGELOG) if idx < 5}

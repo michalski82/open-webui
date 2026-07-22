@@ -19,6 +19,7 @@ ARG USE_AUXILIARY_EMBEDDING_MODEL=TaylorAI/bge-micro-v2
 ARG USE_TIKTOKEN_ENCODING_NAME="cl100k_base"
 
 ARG BUILD_HASH=dev-build
+ARG APP_VERSION=dev
 # Override at your own risk - non-root configurations are untested
 ARG UID=0
 ARG GID=0
@@ -202,7 +203,9 @@ RUN if [ "$USE_PERMISSION_HARDENING" = "true" ]; then \
 USER $UID:$GID
 
 ARG BUILD_HASH
+ARG APP_VERSION
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
+ENV APP_VERSION=${APP_VERSION}
 ENV DOCKER=true
 
 CMD [ "bash", "start.sh"]
