@@ -557,6 +557,16 @@
 
 	onMount(async () => {
 		try {
+			const res = await fetch('/api/app-version');
+			if (res.ok) {
+				const data = await res.json();
+				if (data.version && data.version !== 'dev') {
+					appVersion.set(data.version);
+				}
+			}
+		} catch {}
+
+		try {
 			const width = Number(localStorage.getItem('sidebarWidth'));
 			if (!Number.isNaN(width) && width >= MIN_WIDTH && width <= MAX_WIDTH) {
 				sidebarWidth.set(width);
