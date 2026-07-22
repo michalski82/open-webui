@@ -132,7 +132,7 @@
 
 	const startAppVersionPolling = async () => {
 		try {
-			const response = await fetch(`${WEBUI_API_BASE_URL}/app-version`);
+			const response = await fetch(`/api/app-version`);
 			const data = await response.json();
 			const currentVersion = data.version;
 
