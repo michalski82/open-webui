@@ -627,17 +627,7 @@ class Loader:
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ] or file_ext in ['xls', 'xlsx']:
-                try:
-                    from langchain_community.document_loaders import UnstructuredExcelLoader
-
-                    loader = UnstructuredExcelLoader(file_path)
-                except ImportError:
-                    log.warning(
-                        "The 'unstructured' package is not installed. "
-                        'Falling back to pandas for Excel file loading. '
-                        'Install unstructured for better results: pip install unstructured'
-                    )
-                    loader = ExcelLoader(file_path)
+                loader = ExcelLoader(file_path)
             elif file_content_type in [
                 'application/vnd.ms-powerpoint',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
