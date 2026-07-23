@@ -87,12 +87,11 @@
 			</button>
 		</div>
 
-		<div class="relative z-10 flex-1 flex items-center justify-center min-h-0 px-4">
+		<div class="relative z-10 flex-1 min-h-0 overflow-hidden sm:flex sm:items-center sm:justify-center sm:px-4">
 			<img
 				src="{WEBUI_BASE_URL}/splash-bg.jpg"
 				alt="MM-AI — AI solutions"
-				class="max-w-full max-h-full object-contain drop-shadow-2xl"
-				style="max-width: min(860px, 100%); max-height: min(480px, 70vh);"
+				class="w-full h-full object-cover object-center drop-shadow-2xl sm:w-auto sm:h-auto sm:max-w-full sm:max-h-[70vh] sm:object-contain"
 			/>
 		</div>
 
