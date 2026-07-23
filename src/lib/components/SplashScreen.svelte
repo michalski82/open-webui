@@ -6,13 +6,8 @@
 </script>
 
 {#if show}
-	<div
-		class="fixed inset-0 z-[60] flex flex-col"
-		style="background: url('{WEBUI_BASE_URL}/splash-bg.jpg') center center / cover no-repeat #050c1a;"
-	>
-		<div class="fixed inset-0 bg-black/30"></div>
-
-		<div class="relative z-10 flex justify-end p-6">
+	<div class="fixed inset-0 z-[60] flex flex-col bg-[#050c1a]">
+		<div class="flex justify-end p-4 flex-shrink-0">
 			<button
 				class="text-sm text-white border border-white/30 rounded-full px-5 py-2.5 hover:bg-white/15 transition backdrop-blur-sm font-medium"
 				on:click={onLogin}
@@ -21,7 +16,13 @@
 			</button>
 		</div>
 
-		<div class="relative z-10 flex flex-col items-center justify-end flex-1 pb-10">
+		<img
+			src="{WEBUI_BASE_URL}/splash-bg.jpg"
+			alt="MM-AI"
+			class="flex-1 w-full min-h-0 object-contain"
+		/>
+
+		<div class="flex justify-center py-6 flex-shrink-0">
 			<button
 				class="text-white font-semibold text-base px-8 py-3 rounded-full border border-white/40 hover:bg-white/15 transition backdrop-blur-sm tracking-wide"
 				style="background: linear-gradient(135deg, rgba(100,60,200,0.5), rgba(20,100,200,0.5));"
