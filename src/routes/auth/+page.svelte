@@ -25,6 +25,7 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import OnBoarding from '$lib/components/OnBoarding.svelte';
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
+	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import { redirect } from '@sveltejs/kit';
 
 	const i18n = getContext('i18n');
@@ -141,6 +142,7 @@
 	};
 
 	let onboarding = false;
+	let showSplash = true;
 
 	async function setLogoImage() {
 		await tick();
@@ -220,6 +222,13 @@
 		{`${$WEBUI_NAME}`}
 	</title>
 </svelte:head>
+
+<SplashScreen
+	bind:show={showSplash}
+	onLogin={() => {
+		showSplash = false;
+	}}
+/>
 
 <OnBoarding
 	bind:show={onboarding}
