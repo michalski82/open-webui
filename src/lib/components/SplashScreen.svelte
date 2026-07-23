@@ -20,5 +20,15 @@
 				Zaloguj się →
 			</button>
 		</div>
+
+		<div class="relative z-10 flex flex-col items-center justify-end flex-1 pb-10">
+			<button
+				class="text-white font-semibold text-base px-8 py-3 rounded-full border border-white/40 hover:bg-white/15 transition backdrop-blur-sm tracking-wide"
+				style="background: linear-gradient(135deg, rgba(100,60,200,0.5), rgba(20,100,200,0.5));"
+				on:click={onLogin}
+			>
+				Wejdź do świata AI
+			</button>
+		</div>
 	</div>
 {/if}
