@@ -8,7 +8,7 @@
 {#if show}
 	<div
 		class="fixed inset-0 z-[60] flex flex-col"
-		style="background: url('{WEBUI_BASE_URL}/static/splash-bg.jpg') center center / cover no-repeat #050c1a;"
+		style="background: url('{WEBUI_BASE_URL}/splash-bg.jpg') center center / cover no-repeat #050c1a;"
 	>
 		<div class="fixed inset-0 bg-black/30"></div>
 
