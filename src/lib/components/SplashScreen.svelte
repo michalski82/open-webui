@@ -6,19 +6,19 @@
 
 	const features = [
 		{
-			img: `${WEBUI_BASE_URL}/static/screenshots/chat.png`,
+			img: `${WEBUI_BASE_URL}/screenshots/chat.png`,
 			name: 'Czat',
 			desc: 'Rozmawiaj z modelami AI',
 			alt: 'Zrzut ekranu czatu'
 		},
 		{
-			img: `${WEBUI_BASE_URL}/static/screenshots/images.png`,
+			img: `${WEBUI_BASE_URL}/screenshots/images.png`,
 			name: 'Grafika',
 			desc: 'Generuj obrazy z opisu',
 			alt: 'Zrzut ekranu generowania obrazów'
 		},
 		{
-			img: `${WEBUI_BASE_URL}/static/screenshots/music.png`,
+			img: `${WEBUI_BASE_URL}/screenshots/music.png`,
 			name: 'Muzyka',
 			desc: 'Twórz muzykę z tekstu',
 			alt: 'Zrzut ekranu generowania muzyki'
