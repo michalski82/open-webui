@@ -2932,6 +2932,7 @@ DEFAULT_CONFIG = {
     'web.search.linkup_api_key': LINKUP_API_KEY,
     'web.search.linkup_search_params': LINKUP_SEARCH_PARAMS,
     'image_generation.enable': ENABLE_IMAGE_GENERATION,
+    'music_generation.enable': True,
     'image_generation.engine': IMAGE_GENERATION_ENGINE,
     'image_generation.model': IMAGE_GENERATION_MODEL,
     'image_generation.size': IMAGE_SIZE,

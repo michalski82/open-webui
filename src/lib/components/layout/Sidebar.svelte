@@ -87,7 +87,7 @@
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
 	const BREAKPOINT = 768;
-	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace', 'images'];
+	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace', 'images', 'music'];
 
 	let scrollTop = 0;
 
@@ -153,6 +153,11 @@
 					($config?.features?.enable_image_generation ?? false) &&
 					($user?.role === 'admin' || ($user?.permissions?.features?.image_generation ?? false))
 				);
+			case 'music':
+				return (
+					($config?.features?.enable_music_generation ?? false) &&
+					($user?.role === 'admin' || ($user?.permissions?.features?.music_generation ?? false))
+				);
 			default:
 				return false;
 		}
@@ -165,7 +170,8 @@
 			automations: { label: 'Automations', href: '/automations', iconType: 'automations' },
 			calendar: { label: 'Calendar', href: '/calendar', iconType: 'calendar' },
 			playground: { label: 'Playground', href: '/playground', iconType: 'playground' },
-			images: { label: 'Obrazy', href: '/images', iconType: 'images' }
+			images: { label: 'Obrazy', href: '/images', iconType: 'images' },
+			music: { label: 'Muzyka', href: '/music', iconType: 'music' }
 		};
 		return items[id];
 	};
@@ -987,6 +993,10 @@
 											<Code className="size-4.5" />
 										{:else if itemId === 'images'}
 											<Photo className="size-4.5" strokeWidth="1.5" />
+										{:else if itemId === 'music'}
+											<svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+											</svg>
 										{/if}
 									</div>
 								</a>
