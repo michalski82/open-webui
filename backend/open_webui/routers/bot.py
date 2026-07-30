@@ -11,8 +11,11 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
+from open_webui.internal.db import get_async_db_context
+from open_webui.models.auths import Auth, Auths
 from open_webui.models.users import Users
-from open_webui.utils.auth import get_verified_user
+from open_webui.utils.auth import get_password_hash, get_verified_user
+from sqlalchemy import update as sa_update
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -27,6 +30,24 @@ def _verify_bot_secret(x_bot_secret: str | None = Header(default=None, alias='X-
         raise HTTPException(status_code=503, detail='BOT_SECRET not configured')
     if x_bot_secret != BOT_SECRET:
         raise HTTPException(status_code=401, detail='Invalid bot secret')
+
+
+class UserEntry(BaseModel):
+    id: str
+    email: str
+    name: str
+    role: str
+
+
+class UserCreateRequest(BaseModel):
+    email: str
+    name: str
+    password: str
+    role: str = 'user'
+
+
+class UserEmailRequest(BaseModel):
+    email: str
 
 
 class GeminiAccessRequest(BaseModel):
@@ -123,3 +144,80 @@ async def list_gemini_users(
             until=until_str,
         ))
     return result
+
+
+@router.get('/users', response_model=list[UserEntry])
+async def list_users(
+    _: None = Depends(_verify_bot_secret),
+):
+    result = await Users.get_users()
+    return [
+        UserEntry(id=u.id, email=u.email, name=u.name, role=u.role)
+        for u in result['users']
+    ]
+
+
+@router.post('/users/create', response_model=UserEntry, status_code=201)
+async def create_user(
+    form: UserCreateRequest,
+    _: None = Depends(_verify_bot_secret),
+):
+    existing = await Users.get_user_by_email(form.email)
+    if existing:
+        raise HTTPException(status_code=409, detail=f'User already exists: {form.email}')
+    hashed = await get_password_hash(form.password)
+    user = await Auths.insert_new_auth(
+        email=form.email.lower(),
+        password=hashed,
+        name=form.name,
+        role=form.role,
+    )
+    if not user:
+        raise HTTPException(status_code=500, detail='Failed to create user')
+    return UserEntry(id=user.id, email=user.email, name=user.name, role=user.role)
+
+
+@router.post('/users/disable')
+async def disable_user(
+    form: UserEmailRequest,
+    _: None = Depends(_verify_bot_secret),
+):
+    user = await Users.get_user_by_email(form.email)
+    if not user:
+        raise HTTPException(status_code=404, detail=f'User not found: {form.email}')
+    async with get_async_db_context() as session:
+        await session.execute(
+            sa_update(Auth).where(Auth.id == user.id).values(active=False)
+        )
+        await session.commit()
+    return {'ok': True}
+
+
+@router.post('/users/enable')
+async def enable_user(
+    form: UserEmailRequest,
+    _: None = Depends(_verify_bot_secret),
+):
+    user = await Users.get_user_by_email(form.email)
+    if not user:
+        raise HTTPException(status_code=404, detail=f'User not found: {form.email}')
+    async with get_async_db_context() as session:
+        await session.execute(
+            sa_update(Auth).where(Auth.id == user.id).values(active=True)
+        )
+        await session.commit()
+    return {'ok': True}
+
+
+@router.delete('/users/{email:path}')
+async def delete_user(
+    email: str,
+    _: None = Depends(_verify_bot_secret),
+):
+    user = await Users.get_user_by_email(email)
+    if not user:
+        raise HTTPException(status_code=404, detail=f'User not found: {email}')
+    success = await Auths.delete_auth_by_id(user.id)
+    if not success:
+        raise HTTPException(status_code=500, detail='Failed to delete user')
+    return {'ok': True}
